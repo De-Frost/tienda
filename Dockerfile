@@ -1,13 +1,12 @@
-
 #Etapa 1: Compilacion
-FROM maven:3.8.5-openjdk-17 as build
-workdir /app
+FROM maven:3.9.9-eclipse-temurin-21 AS build
+WORKDIR /app
 COPY . .
-run mvn -f pom.xml clean package -DskipTest
+RUN mvn -f pom.xml clean package -DskipTests
 
 #Etapa 2: Creacion de la Imagen Final
-From openjdk:17.0.1-jdk-slim
-workdir /app
-copy --from=build /app/target/*.jar ./app.jar
-expose 80
-entrypoint ["java","-jar","app.jar"]
+FROM eclipse-temurin:21-jdk-slim
+WORKDIR /app
+COPY --from=build /app/target/*.jar ./app.jar
+EXPOSE 80
+ENTRYPOINT ["java","-jar","app.jar"]
