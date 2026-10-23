@@ -5,7 +5,7 @@ COPY . .
 RUN mvn -f pom.xml clean package -DskipTests
 
 #Etapa 2: Creacion de la Imagen Final
-FROM eclipse-temurin:21-jdk-slim
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /app/target/*.jar ./app.jar
 EXPOSE 80
