@@ -18,17 +18,17 @@ import org.springframework.web.multipart.MultipartFile;
 public class CategoriaService {
 
     // El repositorio es final para asegurar la inmutabilidad
-    private final CategoriaRepository categoriaRepository;    
+    private final CategoriaRepository categoriaRepository;
     private final FirebaseStorageService firebaseStorageService;
 
     @Transactional(readOnly = true)
     public List<Categoria> getCategorias(boolean activo) {
-        if (activo) { //Sólo activos...            
+        if (activo) { //Sólo activos...
             return categoriaRepository.findByActivoTrue();
         }
         return categoriaRepository.findAll();
     }
-    
+
      @Transactional(readOnly = true)
     public Optional<Categoria> getCategoria(Integer idCategoria) {
         return categoriaRepository.findById(idCategoria);
@@ -37,13 +37,17 @@ public class CategoriaService {
     @Transactional
     public void save(Categoria categoria, MultipartFile imagenFile) {
         categoria = categoriaRepository.save(categoria);
-        if (imagenFile != null && !imagenFile.isEmpty()) { //Si no está vacío... pasaron una imagen...            
+        if (imagenFile != null && !imagenFile.isEmpty()) { //Si no está vacío... pasaron una imagen...
             try {
                 String rutaImagen = firebaseStorageService.uploadImage(
                         imagenFile, "categoria",
                         categoria.getIdCategoria());
-                categoria.setRutaImagen(rutaImagen);
-                categoriaRepository.save(categoria);
+                // rutaImagen viene null si Firebase Storage no está configurado;
+                // en ese caso no se toca la ruta de imagen existente.
+                if (rutaImagen != null) {
+                    categoria.setRutaImagen(rutaImagen);
+                    categoriaRepository.save(categoria);
+                }
             } catch (IOException e) {
                 log.warn("No fue posible almacenar la imagen de la categoria {}",categoria.getIdCategoria(),e);
             }

@@ -19,17 +19,17 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProductoService {
 
     // El repositorio es final para asegurar la inmutabilidad
-    private final ProductoRepository productoRepository;    
+    private final ProductoRepository productoRepository;
     private final FirebaseStorageService firebaseStorageService;
 
     @Transactional(readOnly = true)
     public List<Producto> getProductos(boolean activo) {
-        if (activo) { //Sólo activos...            
+        if (activo) { //Sólo activos...
             return productoRepository.findByActivoTrue();
         }
         return productoRepository.findAll();
     }
-    
+
      @Transactional(readOnly = true)
     public Optional<Producto> getProducto(Integer idProducto) {
         return productoRepository.findById(idProducto);
@@ -38,13 +38,17 @@ public class ProductoService {
     @Transactional
     public void save(Producto producto, MultipartFile imagenFile) {
         producto = productoRepository.save(producto);
-        if (imagenFile != null && !imagenFile.isEmpty()) { //Si no está vacío... pasaron una imagen...            
+        if (imagenFile != null && !imagenFile.isEmpty()) { //Si no está vacío... pasaron una imagen...
             try {
                 String rutaImagen = firebaseStorageService.uploadImage(
                         imagenFile, "producto",
                         producto.getIdProducto());
-                producto.setRutaImagen(rutaImagen);
-                productoRepository.save(producto);
+                // rutaImagen viene null si Firebase Storage no está configurado;
+                // en ese caso no se toca la ruta de imagen existente.
+                if (rutaImagen != null) {
+                    producto.setRutaImagen(rutaImagen);
+                    productoRepository.save(producto);
+                }
             } catch (IOException e) {
                 log.warn("No fue posible almacenar la imagen de la producto {}",producto.getIdProducto(),e);
             }
@@ -66,7 +70,7 @@ public class ProductoService {
             throw new IllegalStateException("No se puede eliminar la producto. Tiene datos asociados.", e);
         }
     }
-    
+
         @Transactional(readOnly = true)
     public List<Producto> consultaDerivada(BigDecimal precioInf, BigDecimal precioSup) {
         return productoRepository.findByPrecioBetweenOrderByPrecioAsc(precioInf, precioSup);
@@ -80,6 +84,12 @@ public class ProductoService {
     @Transactional(readOnly = true)
     public List<Producto> consultaSQL(BigDecimal precioInf, BigDecimal precioSup) {
         return productoRepository.consultaSQL(precioInf, precioSup);
+    }
+
+    //Practica #2
+    @Transactional(readOnly = true)
+    public List<Producto> consultaAmpliada(String categoria, BigDecimal precioInf, BigDecimal precioSup) {
+        return productoRepository.consultaAmpliada(categoria, precioInf, precioSup);
     }
 
 }

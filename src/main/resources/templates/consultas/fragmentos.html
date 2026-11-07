@@ -67,8 +67,41 @@
             <div th:replace="~{consultas/fragmentos :: formConsulta('primary',#{consultas.derivadas},'/consultas/consultaDerivada')}"/>
             <div th:replace="~{consultas/fragmentos :: formConsulta('warning',#{consultas.jpql},'/consultas/consultaJPQL')}"/>
             <div th:replace="~{consultas/fragmentos :: formConsulta('success',#{consultas.sql},'/consultas/consultaSQL')}"/>
-            <div class='card'><p>Acá va su Práctica #2</p></div>
+            <div th:replace="~{consultas/fragmentos :: formConsultaAmpliada}"/>
         </section>
+
+        <!-- Practica #2 -->
+        <div th:fragment='formConsultaAmpliada'>
+            <form method="post" th:action='@{/consultas/consultaAmpliada}' class='was-validated'>
+                <div class='card p-2'>
+                    <div class="card-header text-center text-white bg-danger">
+                        <h5>[[#{consultas.ampliada}]]</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class='mb-3'>
+                            <label>[[#{producto.categoria}]]</label>
+                            <input type="text" name='categoria' th:value='${categoria}'
+                                   class='form-control' placeholder="Ej: Electrónica" required/>
+                        </div>
+                        <div class='mb-3'>
+                            <label>[[#{consultas.precio.inferior}]]</label>
+                            <input type="number" name='precioInf' th:value='${precioInf}'
+                                   class='form-control' min="0" required/>
+                        </div>
+                        <div class='mb-3'>
+                            <label>[[#{consultas.precio.superior}]]</label>
+                            <input type="number" name='precioSup' th:value='${precioSup}'
+                                   class='form-control' min="0" required/>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <button type='submit' class='btn btn-danger text-white'>
+                            <i class='fa-solid fa-magnifying-glass'></i> [[#{consultas.ampliada}]]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
 
         <div th:fragment='formConsulta(colorForm, textoForm, urlForm)'>
             <form method="post" th:action='@{${urlForm}}' class='was-validated'>
